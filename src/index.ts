@@ -7,7 +7,7 @@ dotenv.config();
 const app =express()
 
 
-import login from "./controllers/login";
+import login from "./controllers/login.js";
 
 app.use("/", login);
 

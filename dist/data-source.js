@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppDataSource = void 0;
-require("reflect-metadata");
-const typeorm_1 = require("typeorm");
+import "reflect-metadata";
+import { DataSource } from "typeorm";
 const dialect = process.env.DB_DIALECT ?? "mysql";
-exports.AppDataSource = new typeorm_1.DataSource({
+export const AppDataSource = new DataSource({
     type: dialect,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
@@ -13,7 +10,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     database: process.env.DB_DATABASE,
     synchronize: false,
     logging: true,
-    entities: [],
+    entities: [User, Situation],
     subscribers: [],
     migrations: [],
 });
