@@ -7,8 +7,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Situation } from "./Situations.js";
 let User = class User {
     id;
     name;
@@ -32,14 +32,19 @@ __decorate([
 __decorate([
     ManyToOne(() => Situation, (situation) => situation.users),
     JoinColumn({ name: "situationId" }),
-    __metadata("design:type", typeof (_a = typeof Situation !== "undefined" && Situation) === "function" ? _a : Object)
+    __metadata("design:type", Situation)
 ], User.prototype, "situation", void 0);
 __decorate([
-    Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" }),
+    Column("timestamp", {
+        default: () => "CURRENT_TIMESTAMP"
+    }),
     __metadata("design:type", Date)
 ], User.prototype, "createdAt", void 0);
 __decorate([
-    Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP", update: () => "CURRENT_TIMESTAMP" }),
+    Column("timestamp", {
+        default: () => "CURRENT_TIMESTAMP",
+        onUpdate: "CURRENT_TIMESTAMP"
+    }),
     __metadata("design:type", Date)
 ], User.prototype, "updateAt", void 0);
 User = __decorate([

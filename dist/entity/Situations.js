@@ -7,7 +7,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { User } from "./Users.js";
 let Situation = class Situation {
     id;
     nameSituation;
@@ -24,11 +25,16 @@ __decorate([
     __metadata("design:type", String)
 ], Situation.prototype, "nameSituation", void 0);
 __decorate([
-    Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" }),
+    Column("timestamp", {
+        default: () => "CURRENT_TIMESTAMP"
+    }),
     __metadata("design:type", Date)
 ], Situation.prototype, "createdAt", void 0);
 __decorate([
-    Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP", update: () => "CURRENT_TIMESTAMP" }),
+    Column("timestamp", {
+        default: () => "CURRENT_TIMESTAMP",
+        onUpdate: "CURRENT_TIMESTAMP"
+    }),
     __metadata("design:type", Date)
 ], Situation.prototype, "updateAt", void 0);
 __decorate([

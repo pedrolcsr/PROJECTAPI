@@ -1,3 +1,4 @@
+import { Situation } from "./Situations.js";
 export declare class User {
     id: number;
     name: string;

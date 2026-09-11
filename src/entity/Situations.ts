@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    OneToMany
+} from "typeorm";
+import { User } from "./Users.js";
 
 @Entity("situations")
 export class Situation {
@@ -8,10 +14,15 @@ export class Situation {
     @Column()
     nameSituation!: string;
 
-    @Column({type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
+    @Column("timestamp", {
+        default: () => "CURRENT_TIMESTAMP"
+    })
     createdAt!: Date;
 
-    @Column({type: "timestamp", default: () => "CURRENT_TIMESTAMP", update: () => "CURRENT_TIMESTAMP"})
+    @Column("timestamp", {
+        default: () => "CURRENT_TIMESTAMP",
+        onUpdate: "CURRENT_TIMESTAMP"
+    })
     updateAt!: Date;
 
     @OneToMany(() => User, (user) => user.situation)
