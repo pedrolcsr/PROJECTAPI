@@ -14,6 +14,6 @@ export const AppDataSource = new DataSource({
     logging: true,
     entities: [User, Situation],
     subscribers: [],
-    migrations: [],
+    migrations: ["./dist/migration/*.js"],
 });
 //# sourceMappingURL=data-source.js.map
