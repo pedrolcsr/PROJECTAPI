@@ -13,7 +13,7 @@ let Situation = class Situation {
     id;
     nameSituation;
     createdAt;
-    updateAt;
+    updatedAt;
     users;
 };
 __decorate([
@@ -21,7 +21,7 @@ __decorate([
     __metadata("design:type", Number)
 ], Situation.prototype, "id", void 0);
 __decorate([
-    Column(),
+    Column({ unique: true }),
     __metadata("design:type", String)
 ], Situation.prototype, "nameSituation", void 0);
 __decorate([
@@ -36,7 +36,7 @@ __decorate([
         onUpdate: "CURRENT_TIMESTAMP"
     }),
     __metadata("design:type", Date)
-], Situation.prototype, "updateAt", void 0);
+], Situation.prototype, "updatedAt", void 0);
 __decorate([
     OneToMany(() => User, (user) => user.situation),
     __metadata("design:type", Array)

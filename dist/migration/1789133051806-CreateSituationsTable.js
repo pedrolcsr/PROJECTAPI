@@ -13,7 +13,8 @@ export class CreateSituationsTable1789133051806 {
                 },
                 {
                     name: "nameSituation",
-                    type: "varchar"
+                    type: "varchar",
+                    isUnique: true
                 },
                 {
                     name: "createdAt",

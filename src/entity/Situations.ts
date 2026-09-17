@@ -11,7 +11,7 @@ export class Situation {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column()
+    @Column({ unique: true })
     nameSituation!: string;
 
     @Column("timestamp", {
@@ -23,7 +23,7 @@ export class Situation {
         default: () => "CURRENT_TIMESTAMP",
         onUpdate: "CURRENT_TIMESTAMP"
     })
-    updateAt!: Date;
+    updatedAt!: Date;
 
     @OneToMany(() => User, (user) => user.situation)
     users!: User[];

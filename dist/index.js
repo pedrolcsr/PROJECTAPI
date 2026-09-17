@@ -1,9 +1,12 @@
 import express from "express";
 import "dotenv/config";
-import login from "./controllers/login.js";
+import AuthController from "./controllers/AuthController.js";
 import { AppDataSource } from "./data-source.js";
+import SituationsController from "./controllers/SituationsController.js";
 const app = express();
-app.use("/", login);
+app.use(express.json());
+app.use("/", AuthController);
+app.use("/", SituationsController);
 AppDataSource.initialize()
     .then(() => {
     console.log("Banco de dados conectado com sucesso!");
