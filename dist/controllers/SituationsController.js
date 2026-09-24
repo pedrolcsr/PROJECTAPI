@@ -3,8 +3,40 @@ import express from "express";
 import { AppDataSource } from "../data-source.js";
 import { Situation } from "../entity/Situations.js";
 const router = express.Router();
-router.get("/situations", (req, res) => {
-    res.send("Bem vindo! tela de situações da rota");
+router.get("/situations", async (req, res) => {
+    try {
+        const situationRepository = AppDataSource.getRepository(Situation);
+        const situations = await situationRepository.find();
+        res.status(200).json(situations);
+        return;
+    }
+    catch (error) {
+        res.status(500).json({
+            messagem: "Erro ao listar situação!",
+        });
+        return;
+    }
+});
+router.get("/situations/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const situationRepository = AppDataSource.getRepository(Situation);
+        const situation = await situationRepository.findOneBy({ id: Number(id) });
+        if (!situation) {
+            res.status(404).json({
+                messagem: "Situação não encontrada!"
+            });
+            return;
+        }
+        res.status(200).json(situation);
+        return;
+    }
+    catch (error) {
+        res.status(500).json({
+            messagem: "Erro ao listar situação!",
+        });
+        return;
+    }
 });
 router.post("/situations", async (req, res) => {
     try {
