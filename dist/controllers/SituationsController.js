@@ -55,5 +55,31 @@ router.post("/situations", async (req, res) => {
         });
     }
 });
+router.put("/situations/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        var data = req.body;
+        const situationRepository = AppDataSource.getRepository(Situation);
+        const situation = await situationRepository.findOneBy({ id: Number(id) });
+        if (!situation) {
+            res.status(404).json({
+                messagem: "Situação não encontrada!"
+            });
+            return;
+        }
+        situationRepository.merge(situation, data);
+        const updatedSituation = await situationRepository.save(situation);
+        res.status(201).json({
+            messagem: "Situação atualizada com sucesso!",
+            situation: updatedSituation
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            messagem: "Erro ao atualizar situação!",
+        });
+        return;
+    }
+});
 export default router;
 //# sourceMappingURL=SituationsController.js.map
