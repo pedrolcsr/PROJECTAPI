@@ -2,12 +2,15 @@
 import express from "express";
 import { AppDataSource } from "../data-source.js";
 import { Situation } from "../entity/Situations.js";
+import { PaginationService } from "../services/PaginationService.js";
 const router = express.Router();
 router.get("/situations", async (req, res) => {
     try {
         const situationRepository = AppDataSource.getRepository(Situation);
-        const situations = await situationRepository.find();
-        res.status(200).json(situations);
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        const result = await PaginationService.paginate(situationRepository, page, limit, { id: "ASC" });
+        res.status(200).json(result);
         return;
     }
     catch (error) {
