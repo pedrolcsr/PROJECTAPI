@@ -3,10 +3,16 @@ import "dotenv/config";
 import AuthController from "./controllers/AuthController.js";
 import { AppDataSource } from "./data-source.js";
 import SituationsController from "./controllers/SituationsController.js";
+import ProductCategoriesController from "./controllers/ProductCategoriesController.js";
+import ProductSituationsController from "./controllers/ProductSituationsController.js";
+import ProductsController from "./controllers/ProductsController.js";
 const app = express();
 app.use(express.json());
 app.use("/", AuthController);
 app.use("/", SituationsController);
+app.use("/", ProductCategoriesController);
+app.use("/", ProductSituationsController);
+app.use("/", ProductsController);
 AppDataSource.initialize()
     .then(() => {
     console.log("Banco de dados conectado com sucesso!");

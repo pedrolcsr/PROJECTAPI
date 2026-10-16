@@ -3,6 +3,9 @@ import "dotenv/config";
 import { DataSource } from "typeorm";
 import { User } from "./entity/Users.js";
 import { Situation } from "./entity/Situations.js";
+import { ProductCategory } from "./entity/ProductCategories.js";
+import { ProductSituation } from "./entity/ProductSituations.js";
+import { Product } from "./entity/Products.js";
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST,
@@ -12,7 +15,13 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_DATABASE,
     synchronize: false,
     logging: true,
-    entities: [User, Situation],
+    entities: [
+        User,
+        Situation,
+        ProductCategory,
+        ProductSituation,
+        Product
+    ],
     subscribers: [],
     migrations: ["./dist/migration/*.js"],
 });
