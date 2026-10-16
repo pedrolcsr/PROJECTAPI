@@ -293,4 +293,4 @@ Este projeto foi desenvolvido para praticar conceitos fundamentais de desenvolvi
 **Pedro Lucas Ramos Pereira**
 
 - GitHub: [@pedrolcsr](https://github.com/pedrolcsr)
-- LinkedIn: [Pedro Lucas Ramos Pereira](https://www.linkedin.com/in/SEU-USUARIO/)
+- LinkedIn: [Pedro Lucas Ramos Pereira](www.linkedin.com/in/pedrolcsr)
