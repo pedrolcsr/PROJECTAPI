@@ -1,51 +1,83 @@
-//import express, { Request, Response } from "express";
 import express from "express";
 import { AppDataSource } from "../data-source.js";
 import { Situation } from "../entity/Situations.js";
-import { PaginationService } from "../services/PaginationService.js";
+import { PaginationService, PaginationError } from "../services/PaginationService.js";
 const router = express.Router();
+function getValidId(id) {
+    const parsedId = Number(id);
+    if (!Number.isInteger(parsedId) || parsedId < 1) {
+        return null;
+    }
+    return parsedId;
+}
+// LISTAR SITUAÇÕES COM PAGINAÇÃO
 router.get("/situations", async (req, res) => {
     try {
+        const page = req.query.page === undefined
+            ? 1
+            : Number(req.query.page);
+        const limit = req.query.limit === undefined
+            ? 10
+            : Number(req.query.limit);
         const situationRepository = AppDataSource.getRepository(Situation);
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 10;
         const result = await PaginationService.paginate(situationRepository, page, limit, { id: "ASC" });
         res.status(200).json(result);
-        return;
     }
     catch (error) {
+        if (error instanceof PaginationError) {
+            res.status(400).json({
+                messagem: error.message
+            });
+            return;
+        }
+        console.error(error);
         res.status(500).json({
-            messagem: "Erro ao listar situação!",
+            messagem: "Erro ao listar situações."
         });
-        return;
     }
 });
+// BUSCAR SITUAÇÃO POR ID
 router.get("/situations/:id", async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = getValidId(String(req.params.id ?? ""));
+        if (id === null) {
+            res.status(400).json({
+                messagem: "ID inválido."
+            });
+            return;
+        }
         const situationRepository = AppDataSource.getRepository(Situation);
-        const situation = await situationRepository.findOneBy({ id: Number(id) });
+        const situation = await situationRepository.findOneBy({ id });
         if (!situation) {
             res.status(404).json({
-                messagem: "Situação não encontrada!"
+                messagem: "Situação não encontrada."
             });
             return;
         }
         res.status(200).json(situation);
-        return;
     }
     catch (error) {
+        console.error(error);
         res.status(500).json({
-            messagem: "Erro ao listar situação!",
+            messagem: "Erro ao consultar situação."
         });
-        return;
     }
 });
+// CADASTRAR SITUAÇÃO
 router.post("/situations", async (req, res) => {
     try {
-        var data = req.body;
+        const nameSituation = req.body?.nameSituation;
+        if (typeof nameSituation !== "string" ||
+            nameSituation.trim().length === 0) {
+            res.status(400).json({
+                messagem: "O campo nameSituation é obrigatório."
+            });
+            return;
+        }
         const situationRepository = AppDataSource.getRepository(Situation);
-        const newSituation = situationRepository.create(data);
+        const newSituation = situationRepository.create({
+            nameSituation: nameSituation.trim()
+        });
         await situationRepository.save(newSituation);
         res.status(201).json({
             messagem: "Situação cadastrada com sucesso!",
@@ -53,58 +85,80 @@ router.post("/situations", async (req, res) => {
         });
     }
     catch (error) {
+        console.error(error);
         res.status(500).json({
-            messagem: "Erro ao cadastrar situação!",
+            messagem: "Erro ao cadastrar situação."
         });
     }
 });
+// ATUALIZAR SITUAÇÃO
 router.put("/situations/:id", async (req, res) => {
     try {
-        const { id } = req.params;
-        var data = req.body;
-        const situationRepository = AppDataSource.getRepository(Situation);
-        const situation = await situationRepository.findOneBy({ id: Number(id) });
-        if (!situation) {
-            res.status(404).json({
-                messagem: "Situação não encontrada!"
+        const id = getValidId(String(req.params.id ?? ""));
+        if (id === null) {
+            res.status(400).json({
+                messagem: "ID inválido."
             });
             return;
         }
-        situationRepository.merge(situation, data);
+        const nameSituation = req.body?.nameSituation;
+        if (typeof nameSituation !== "string" ||
+            nameSituation.trim().length === 0) {
+            res.status(400).json({
+                messagem: "O campo nameSituation é obrigatório."
+            });
+            return;
+        }
+        const situationRepository = AppDataSource.getRepository(Situation);
+        const situation = await situationRepository.findOneBy({ id });
+        if (!situation) {
+            res.status(404).json({
+                messagem: "Situação não encontrada."
+            });
+            return;
+        }
+        situation.nameSituation = nameSituation.trim();
         const updatedSituation = await situationRepository.save(situation);
-        res.status(201).json({
+        res.status(200).json({
             messagem: "Situação atualizada com sucesso!",
             situation: updatedSituation
         });
     }
     catch (error) {
+        console.error(error);
         res.status(500).json({
-            messagem: "Erro ao atualizar situação!",
+            messagem: "Erro ao atualizar situação."
         });
-        return;
     }
 });
+// EXCLUIR SITUAÇÃO
 router.delete("/situations/:id", async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = getValidId(String(req.params.id ?? ""));
+        if (id === null) {
+            res.status(400).json({
+                messagem: "ID inválido."
+            });
+            return;
+        }
         const situationRepository = AppDataSource.getRepository(Situation);
-        const situation = await situationRepository.findOneBy({ id: Number(id) });
+        const situation = await situationRepository.findOneBy({ id });
         if (!situation) {
             res.status(404).json({
-                messagem: "Situação não encontrada!"
+                messagem: "Situação não encontrada."
             });
             return;
         }
         await situationRepository.remove(situation);
         res.status(200).json({
-            messagem: "Situação removida com sucesso!",
+            messagem: "Situação removida com sucesso!"
         });
     }
     catch (error) {
+        console.error(error);
         res.status(500).json({
-            messagem: "Erro ao remover situação!",
+            messagem: "Erro ao remover situação."
         });
-        return;
     }
 });
 export default router;
