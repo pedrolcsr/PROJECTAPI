@@ -8,6 +8,7 @@ import {
     PaginationError
 } from "../services/PaginationService.js";
 import * as yup from 'yup';
+import { Not } from "typeorm";
  
 const router = express.Router();
 
@@ -120,6 +121,20 @@ router.post("/situations", async (req: Request, res: Response) => {
         const situationRepository =
             AppDataSource.getRepository(Situation);
 
+        const existingSituation = await situationRepository.findOne({
+
+            where: { nameSituation: nameSituation.trim() }
+
+        })
+
+        if (existingSituation) {
+            res.status(400).json({
+                messagem: "Já existe uma situação com esse nome."
+            });
+            return;
+        }
+
+
         const newSituation = situationRepository.create({
             nameSituation: nameSituation.trim()
         });
@@ -185,11 +200,25 @@ router.put("/situations/:id", async (req: Request, res: Response) => {
         const situationRepository =
             AppDataSource.getRepository(Situation);
 
+
         const situation = await situationRepository.findOneBy({ id });
 
         if (!situation) {
             res.status(404).json({
                 messagem: "Situação não encontrada."
+            });
+            return;
+        }
+
+         const existingSituation = await situationRepository.findOne({
+
+            where: { nameSituation: nameSituation.trim(), id: Not(id) }
+
+        })
+
+        if (existingSituation) {
+            res.status(400).json({
+                messagem: "Já existe uma situação com esse nome."
             });
             return;
         }
