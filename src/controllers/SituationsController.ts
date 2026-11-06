@@ -7,7 +7,8 @@ import {
     PaginationService,
     PaginationError
 } from "../services/PaginationService.js";
-
+import * as yup from 'yup';
+ 
 const router = express.Router();
 
 function getValidId(id: string): number | null {
@@ -97,6 +98,15 @@ router.post("/situations", async (req: Request, res: Response) => {
     try {
         const nameSituation = req.body?.nameSituation;
 
+        const schema = yup.object().shape({
+
+            nameSituation: yup.string().required("O campo nameSituation é obrigatório.") 
+            .min(3, "O campo nameSituation deve ter pelo menos 3 caracteres.")
+
+        }); 
+
+        await schema.validate({ nameSituation}, { abortEarly: false });
+
         if (
             typeof nameSituation !== "string" ||
             nameSituation.trim().length === 0
@@ -122,6 +132,14 @@ router.post("/situations", async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.error(error);
+        if (error instanceof yup.ValidationError) {
+        
+            res.status(400).json({
+            messagem: error.errors
+            });
+
+        }
+
 
         res.status(500).json({
             messagem: "Erro ao cadastrar situação."
@@ -132,6 +150,8 @@ router.post("/situations", async (req: Request, res: Response) => {
 // ATUALIZAR SITUAÇÃO
 router.put("/situations/:id", async (req: Request, res: Response) => {
     try {
+
+
         const id = getValidId(String(req.params.id ?? ""));
 
         if (id === null) {
@@ -142,6 +162,15 @@ router.put("/situations/:id", async (req: Request, res: Response) => {
         }
 
         const nameSituation = req.body?.nameSituation;
+
+         const schema = yup.object().shape({
+
+            nameSituation: yup.string().required("O campo nameSituation é obrigatório.") 
+            .min(3, "O campo nameSituation deve ter pelo menos 3 caracteres.")
+
+        }); 
+
+        await schema.validate({ nameSituation}, { abortEarly: false });
 
         if (
             typeof nameSituation !== "string" ||
@@ -175,6 +204,16 @@ router.put("/situations/:id", async (req: Request, res: Response) => {
             situation: updatedSituation
         });
     } catch (error) {
+
+         if (error instanceof yup.ValidationError) {
+        
+            res.status(400).json({
+            messagem: error.errors
+            });
+            return;
+
+        }
+
         console.error(error);
 
         res.status(500).json({
