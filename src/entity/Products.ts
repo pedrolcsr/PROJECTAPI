@@ -20,6 +20,19 @@ export class Product {
     @Column()
     name!: string;
 
+    @Column({ unique: true })
+    slug!: string;
+
+    @Column()
+    description!: string;
+
+   @Column({
+    type: "decimal",
+    precision: 10,
+    scale: 2
+})
+price!: number;
+
     @ManyToOne(
         () => ProductCategory,
         (productCategory) => productCategory.products

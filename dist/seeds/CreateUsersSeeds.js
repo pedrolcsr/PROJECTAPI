@@ -21,12 +21,14 @@ export default class CreateUsersSeeds {
                 id: 1,
                 name: "Admin User",
                 email: "admin@admin.com",
+                password: "admin123",
                 situation: situation,
             },
             {
                 id: 2,
                 name: "Regular User",
                 email: "regular@regular.com",
+                password: "regular123",
                 situation: situation,
             },
         ];

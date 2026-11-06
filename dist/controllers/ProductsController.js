@@ -1,23 +1,19 @@
 import express from "express";
+import * as yup from "yup";
+import slugify from "slugify";
+import { In, Not } from "typeorm";
 import { AppDataSource } from "../data-source.js";
 import { Product } from "../entity/Products.js";
 import { ProductCategory } from "../entity/ProductCategories.js";
 import { ProductSituation } from "../entity/ProductSituations.js";
 import { PaginationService, PaginationError } from "../services/PaginationService.js";
 const router = express.Router();
+// VALIDAR ID
 function getValidId(id) {
     const parsedId = Number(id);
     return Number.isInteger(parsedId) && parsedId > 0
         ? parsedId
         : null;
-}
-function getValidForeignId(value) {
-    if (typeof value !== "number" ||
-        !Number.isInteger(value) ||
-        value < 1) {
-        return null;
-    }
-    return value;
 }
 // LISTAR PRODUTOS COM PAGINAÇÃO
 router.get("/products", async (req, res) => {
@@ -26,14 +22,17 @@ router.get("/products", async (req, res) => {
         const limit = req.query.limit === undefined ? 10 : Number(req.query.limit);
         const repository = AppDataSource.getRepository(Product);
         const result = await PaginationService.paginate(repository, page, limit, { id: "ASC" });
-        const products = await repository.find({
-            where: result.data.map((product) => ({ id: product.id })),
-            relations: {
-                productCategory: true,
-                productSituation: true
-            },
-            order: { id: "ASC" }
-        });
+        const ids = result.data.map((product) => product.id);
+        const products = ids.length > 0
+            ? await repository.find({
+                where: { id: In(ids) },
+                relations: {
+                    productCategory: true,
+                    productSituation: true
+                },
+                order: { id: "ASC" }
+            })
+            : [];
         res.status(200).json({
             ...result,
             data: products
@@ -77,53 +76,108 @@ router.get("/products/:id", async (req, res) => {
 // CADASTRAR PRODUTO
 router.post("/products", async (req, res) => {
     try {
-        const { name, productCategoryId, productSituationId } = req.body ?? {};
-        if (typeof name !== "string" || !name.trim()) {
-            res.status(400).json({ messagem: "O campo name é obrigatório." });
-            return;
-        }
-        const categoryId = getValidForeignId(productCategoryId);
-        const situationId = getValidForeignId(productSituationId);
-        if (categoryId === null || situationId === null) {
+        const schema = yup.object({
+            name: yup
+                .string()
+                .required("O campo name é obrigatório.")
+                .min(3, "O campo name deve ter pelo menos 3 caracteres.")
+                .max(255, "O campo name deve ter no máximo 255 caracteres."),
+            slug: yup
+                .string()
+                .required("O campo slug é obrigatório.")
+                .min(3, "O campo slug deve ter pelo menos 3 caracteres.")
+                .max(255, "O campo slug deve ter no máximo 255 caracteres."),
+            description: yup
+                .string()
+                .required("O campo description é obrigatório.")
+                .min(3, "O campo description deve ter pelo menos 3 caracteres.")
+                .max(255, "O campo description deve ter no máximo 255 caracteres."),
+            price: yup
+                .number()
+                .typeError("O campo price deve ser um número.")
+                .required("O campo price é obrigatório.")
+                .positive("O campo price deve ser um número positivo.")
+                .test("is-decimal", "O campo price deve ter no máximo duas casas decimais.", (value) => value === undefined ||
+                Number(value.toFixed(2)) === value),
+            situation: yup
+                .number()
+                .typeError("O campo situation deve ser um número.")
+                .required("O campo situation é obrigatório.")
+                .positive("O campo situation deve ser um número positivo.")
+                .integer("O campo situation deve ser um número inteiro."),
+            category: yup
+                .number()
+                .typeError("O campo category deve ser um número.")
+                .required("O campo category é obrigatório.")
+                .positive("O campo category deve ser um número positivo.")
+                .integer("O campo category deve ser um número inteiro.")
+        });
+        const data = await schema.validate(req.body ?? {}, {
+            abortEarly: false
+        });
+        data.slug = slugify(data.slug, {
+            lower: true,
+            strict: true
+        });
+        const productRepository = AppDataSource.getRepository(Product);
+        const categoryRepository = AppDataSource.getRepository(ProductCategory);
+        const situationRepository = AppDataSource.getRepository(ProductSituation);
+        // VERIFICAR CATEGORIA
+        const category = await categoryRepository.findOneBy({
+            id: data.category
+        });
+        if (!category) {
             res.status(400).json({
-                messagem: "productCategoryId e productSituationId devem ser números inteiros positivos."
+                messagem: "Categoria não encontrada."
             });
             return;
         }
-        const categoryRepository = AppDataSource.getRepository(ProductCategory);
-        const situationRepository = AppDataSource.getRepository(ProductSituation);
-        const category = await categoryRepository.findOneBy({ id: categoryId });
-        const situation = await situationRepository.findOneBy({ id: situationId });
-        if (!category) {
-            res.status(400).json({ messagem: "Categoria de produto não encontrada." });
-            return;
-        }
+        // VERIFICAR SITUAÇÃO
+        const situation = await situationRepository.findOneBy({
+            id: data.situation
+        });
         if (!situation) {
-            res.status(400).json({ messagem: "Situação de produto não encontrada." });
+            res.status(400).json({
+                messagem: "Situação não encontrada."
+            });
             return;
         }
-        const repository = AppDataSource.getRepository(Product);
-        const product = repository.create({
-            name: name.trim(),
+        // VERIFICAR SLUG
+        const existingProduct = await productRepository.findOne({
+            where: { slug: data.slug }
+        });
+        if (existingProduct) {
+            res.status(400).json({
+                messagem: "Já existe um produto com o mesmo slug."
+            });
+            return;
+        }
+        // CRIAR PRODUTO
+        const newProduct = productRepository.create({
+            name: data.name,
+            slug: data.slug,
+            description: data.description,
+            price: data.price,
             productCategory: category,
             productSituation: situation
         });
-        const savedProduct = await repository.save(product);
-        const createdProduct = await repository.findOne({
-            where: { id: savedProduct.id },
-            relations: {
-                productCategory: true,
-                productSituation: true
-            }
-        });
+        await productRepository.save(newProduct);
         res.status(201).json({
             messagem: "Produto cadastrado com sucesso!",
-            product: createdProduct
+            product: newProduct
         });
     }
     catch (error) {
+        if (error instanceof yup.ValidationError) {
+            res.status(400).json({
+                messagem: error.errors
+            });
+            return;
+        }
         console.error(error);
-        res.status(500).json({ messagem: "Erro ao cadastrar produto." });
+        res.status(500).json({
+            messagem: "Erro ao cadastrar produto."
+        });
     }
 });
 // ATUALIZAR PRODUTO
@@ -134,58 +188,117 @@ router.put("/products/:id", async (req, res) => {
             res.status(400).json({ messagem: "ID inválido." });
             return;
         }
-        const { name, productCategoryId, productSituationId } = req.body ?? {};
-        if (typeof name !== "string" || !name.trim()) {
-            res.status(400).json({ messagem: "O campo name é obrigatório." });
-            return;
-        }
-        const categoryId = getValidForeignId(productCategoryId);
-        const situationId = getValidForeignId(productSituationId);
-        if (categoryId === null || situationId === null) {
-            res.status(400).json({
-                messagem: "productCategoryId e productSituationId devem ser números inteiros positivos."
+        const schema = yup.object({
+            name: yup
+                .string()
+                .required("O campo name é obrigatório.")
+                .min(3, "O campo name deve ter pelo menos 3 caracteres.")
+                .max(255, "O campo name deve ter no máximo 255 caracteres."),
+            slug: yup
+                .string()
+                .required("O campo slug é obrigatório.")
+                .min(3, "O campo slug deve ter pelo menos 3 caracteres.")
+                .max(255, "O campo slug deve ter no máximo 255 caracteres."),
+            description: yup
+                .string()
+                .required("O campo description é obrigatório.")
+                .min(3, "O campo description deve ter pelo menos 3 caracteres.")
+                .max(255, "O campo description deve ter no máximo 255 caracteres."),
+            price: yup
+                .number()
+                .typeError("O campo price deve ser um número.")
+                .required("O campo price é obrigatório.")
+                .positive("O campo price deve ser um número positivo.")
+                .test("is-decimal", "O campo price deve ter no máximo duas casas decimais.", (value) => value === undefined ||
+                Number(value.toFixed(2)) === value),
+            situation: yup
+                .number()
+                .typeError("O campo situation deve ser um número.")
+                .required("O campo situation é obrigatório.")
+                .positive("O campo situation deve ser um número positivo.")
+                .integer("O campo situation deve ser um número inteiro."),
+            category: yup
+                .number()
+                .typeError("O campo category deve ser um número.")
+                .required("O campo category é obrigatório.")
+                .positive("O campo category deve ser um número positivo.")
+                .integer("O campo category deve ser um número inteiro.")
+        });
+        const data = await schema.validate(req.body ?? {}, {
+            abortEarly: false
+        });
+        const productRepository = AppDataSource.getRepository(Product);
+        const categoryRepository = AppDataSource.getRepository(ProductCategory);
+        const situationRepository = AppDataSource.getRepository(ProductSituation);
+        // BUSCAR PRODUTO
+        const product = await productRepository.findOneBy({ id });
+        if (!product) {
+            res.status(404).json({
+                messagem: "Produto não encontrado."
             });
             return;
         }
-        const repository = AppDataSource.getRepository(Product);
-        const product = await repository.findOneBy({ id });
-        if (!product) {
-            res.status(404).json({ messagem: "Produto não encontrado." });
-            return;
-        }
-        const category = await AppDataSource
-            .getRepository(ProductCategory)
-            .findOneBy({ id: categoryId });
+        data.slug = slugify(data.slug, {
+            lower: true,
+            strict: true
+        });
+        // VERIFICAR CATEGORIA
+        const category = await categoryRepository.findOneBy({
+            id: data.category
+        });
         if (!category) {
-            res.status(400).json({ messagem: "Categoria de produto não encontrada." });
+            res.status(400).json({
+                messagem: "Categoria não encontrada."
+            });
             return;
         }
-        const situation = await AppDataSource
-            .getRepository(ProductSituation)
-            .findOneBy({ id: situationId });
+        // VERIFICAR SITUAÇÃO
+        const situation = await situationRepository.findOneBy({
+            id: data.situation
+        });
         if (!situation) {
-            res.status(400).json({ messagem: "Situação de produto não encontrada." });
+            res.status(400).json({
+                messagem: "Situação não encontrada."
+            });
             return;
         }
-        product.name = name.trim();
-        product.productCategory = category;
-        product.productSituation = situation;
-        await repository.save(product);
-        const updatedProduct = await repository.findOne({
-            where: { id },
-            relations: {
-                productCategory: true,
-                productSituation: true
+        // VERIFICAR SLUG
+        const existingProduct = await productRepository.findOne({
+            where: {
+                slug: data.slug,
+                id: Not(id)
             }
         });
+        if (existingProduct) {
+            res.status(400).json({
+                messagem: "Já existe um produto com o mesmo slug."
+            });
+            return;
+        }
+        // ATUALIZAR DADOS
+        product.name = data.name;
+        product.slug = data.slug;
+        product.description = data.description;
+        product.price = data.price;
+        product.productCategory = category;
+        product.productSituation = situation;
+        const updatedProduct = await productRepository.save(product);
         res.status(200).json({
             messagem: "Produto atualizado com sucesso!",
             product: updatedProduct
         });
     }
     catch (error) {
+        if (error instanceof yup.ValidationError) {
+            res.status(400).json({
+                messagem: error.errors
+            });
+            return;
+        }
         console.error(error);
-        res.status(500).json({ messagem: "Erro ao atualizar produto." });
+        res.status(500).json({
+            messagem: "Erro ao atualizar produto."
+        });
     }
 });
 // EXCLUIR PRODUTO
@@ -199,15 +312,21 @@ router.delete("/products/:id", async (req, res) => {
         const repository = AppDataSource.getRepository(Product);
         const product = await repository.findOneBy({ id });
         if (!product) {
-            res.status(404).json({ messagem: "Produto não encontrado." });
+            res.status(404).json({
+                messagem: "Produto não encontrado."
+            });
             return;
         }
         await repository.remove(product);
-        res.status(200).json({ messagem: "Produto removido com sucesso!" });
+        res.status(200).json({
+            messagem: "Produto removido com sucesso!"
+        });
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ messagem: "Erro ao remover produto." });
+        res.status(500).json({
+            messagem: "Erro ao remover produto."
+        });
     }
 });
 export default router;

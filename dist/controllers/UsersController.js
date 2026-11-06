@@ -45,6 +45,7 @@ router.post("/users", async (req, res) => {
         const schema = yup.object().shape({
             name: yup.string().required("O campo name é obrigatório.").min(3, "O campo name deve ter pelo menos 3 caracteres."),
             email: yup.string().email("O campo email deve ser um email válido.").required("O campo email é obrigatório."),
+            password: yup.string().required("O campo password é obrigatório.").min(6, "O campo password deve ter pelo menos 6 caracteres."),
             situation: yup.number().required("O campo situation é obrigatório.").positive("O campo situation deve ser um número positivo.").integer("O campo situation deve ser um número inteiro.")
         });
         await schema.validate(data, { abortEarly: false });

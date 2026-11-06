@@ -13,6 +13,9 @@ import { ProductCategory } from "./ProductCategories.js";
 let Product = class Product {
     id;
     name;
+    slug;
+    description;
+    price;
     productCategory;
     productSituation;
     createdAt;
@@ -26,6 +29,22 @@ __decorate([
     Column(),
     __metadata("design:type", String)
 ], Product.prototype, "name", void 0);
+__decorate([
+    Column({ unique: true }),
+    __metadata("design:type", String)
+], Product.prototype, "slug", void 0);
+__decorate([
+    Column(),
+    __metadata("design:type", String)
+], Product.prototype, "description", void 0);
+__decorate([
+    Column({
+        type: "decimal",
+        precision: 10,
+        scale: 2
+    }),
+    __metadata("design:type", Number)
+], Product.prototype, "price", void 0);
 __decorate([
     ManyToOne(() => ProductCategory, (productCategory) => productCategory.products),
     JoinColumn({ name: "productCategoryId" }),

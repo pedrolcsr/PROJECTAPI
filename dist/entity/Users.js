@@ -13,9 +13,10 @@ let User = class User {
     id;
     name;
     email;
+    password;
     situation;
     createdAt;
-    updateAt;
+    updatedAt;
 };
 __decorate([
     PrimaryGeneratedColumn(),
@@ -29,6 +30,10 @@ __decorate([
     Column({ unique: true }),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
+__decorate([
+    Column(),
+    __metadata("design:type", String)
+], User.prototype, "password", void 0);
 __decorate([
     ManyToOne(() => Situation, (situation) => situation.users),
     JoinColumn({ name: "situationId" }),
@@ -46,7 +51,7 @@ __decorate([
         onUpdate: "CURRENT_TIMESTAMP"
     }),
     __metadata("design:type", Date)
-], User.prototype, "updateAt", void 0);
+], User.prototype, "updatedAt", void 0);
 User = __decorate([
     Entity("users")
 ], User);
