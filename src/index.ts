@@ -1,6 +1,7 @@
 import express from "express";
 import "dotenv/config";
 
+import TestConnectionController from "./controllers/TestConnectionController.js";
 import AuthController from "./controllers/AuthController.js";
 import { AppDataSource } from "./data-source.js";
 import SituationsController from "./controllers/SituationsController.js";
@@ -10,11 +11,16 @@ import ProductSituationsController from "./controllers/ProductSituationsControll
 
 import ProductsController from "./controllers/ProductsController.js";
 
+import cors from "cors";
+
 const app = express();
 
 
 app.use(express.json());
 
+app.use(cors());
+    
+app.use("/", TestConnectionController);
 app.use("/", AuthController);
 app.use("/", SituationsController);
 
