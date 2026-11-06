@@ -3,6 +3,7 @@ import "dotenv/config";
 
 import TestConnectionController from "./controllers/TestConnectionController.js";
 import AuthController from "./controllers/AuthController.js";
+import UsersController from "./controllers/UsersController.js";
 import { AppDataSource } from "./data-source.js";
 import SituationsController from "./controllers/SituationsController.js";
 
@@ -22,6 +23,7 @@ app.use(cors());
     
 app.use("/", TestConnectionController);
 app.use("/", AuthController);
+app.use("/", UsersController);
 app.use("/", SituationsController);
 
 app.use("/", ProductCategoriesController);

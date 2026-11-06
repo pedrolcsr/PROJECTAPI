@@ -1,5 +1,6 @@
 import { AppDataSource } from "./data-source.js";
 import CreateSituationsSeeds from "./seeds/CreateSituationsSeeds.js";
+import CreateUsersSeeds from "./seeds/CreateUsersSeeds.js";
 
 const runSeeds = async () => {
     console.log("Conectando ao banco de dados...");
@@ -10,8 +11,10 @@ const runSeeds = async () => {
 
     try {
         const situationsSeeds = new CreateSituationsSeeds();
+        const usersSeeds = new CreateUsersSeeds();
         
         await situationsSeeds.run(AppDataSource);
+        await usersSeeds.run(AppDataSource);
 
     } catch (error) {
 
