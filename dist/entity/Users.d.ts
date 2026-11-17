@@ -7,5 +7,6 @@ export declare class User {
     situation: Situation;
     createdAt: Date;
     updatedAt: Date;
+    comparePassword(password: string): Promise<boolean>;
 }
 //# sourceMappingURL=Users.d.ts.map

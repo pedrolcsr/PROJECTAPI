@@ -7,6 +7,8 @@ import {
 } from "typeorm";
 import { Situation } from "./Situations.js";
 
+import bcrypt from "bcryptjs";
+
 @Entity("users")
 export class User {
     @PrimaryGeneratedColumn()
@@ -35,4 +37,8 @@ export class User {
         onUpdate: "CURRENT_TIMESTAMP"
     })
     updatedAt!: Date;
+
+    async comparePassword(password:string): Promise<boolean>{
+        return bcrypt.compare(password, this.password)
+    }
 }

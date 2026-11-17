@@ -9,6 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 import { Situation } from "./Situations.js";
+import bcrypt from "bcryptjs";
 let User = class User {
     id;
     name;
@@ -17,6 +18,9 @@ let User = class User {
     situation;
     createdAt;
     updatedAt;
+    async comparePassword(password) {
+        return bcrypt.compare(password, this.password);
+    }
 };
 __decorate([
     PrimaryGeneratedColumn(),
