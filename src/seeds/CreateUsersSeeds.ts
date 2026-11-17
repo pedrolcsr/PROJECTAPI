@@ -4,6 +4,8 @@ import { User } from "../entity/Users.js";
 
 import {Situation} from "../entity/Situations.js";
 
+import bcrypt from "bcryptjs";
+
 
 export default class CreateUsersSeeds {
 
@@ -34,14 +36,14 @@ export default class CreateUsersSeeds {
                 id: 1,
                 name: "Admin User",
                 email: "admin@admin.com",
-                password: "admin123",
+                password: await bcrypt.hash("123456", 10),
                 situation: situation,
             },
             {
                 id: 2,
                 name: "Regular User",
                 email: "regular@regular.com",
-                password: "regular123",
+                password: await bcrypt.hash("123456", 10),
                 situation: situation,
             },
         ];

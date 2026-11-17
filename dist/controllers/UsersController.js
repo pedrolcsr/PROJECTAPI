@@ -4,6 +4,7 @@ import { User } from "../entity/Users.js";
 import { PaginationService, PaginationError } from "../services/PaginationService.js";
 import * as yup from 'yup';
 import { Not } from "typeorm";
+import bcrypt from "bcryptjs";
 const router = express.Router();
 router.get("/users", async (req, res) => {
     try {
@@ -59,6 +60,7 @@ router.post("/users", async (req, res) => {
             });
             return;
         }
+        data.password = await bcrypt.hash(data.password, 10);
         const newUser = userRepository.create({
             name: data.name.trim(),
             email: data.email.trim(),
@@ -79,6 +81,42 @@ router.post("/users", async (req, res) => {
         }
         res.status(500).json({
             messagem: "Erro ao cadastrar usuário."
+        });
+    }
+});
+router.put("/users-password/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = req.body;
+        const schema = yup.object().shape({
+            password: yup.string().required("O campo password é obrigatório.").min(6, "O campo password deve ter pelo menos 6 caracteres.")
+        });
+        await schema.validate(data, { abortEarly: false });
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOneBy({ id: Number(id) });
+        if (!user) {
+            res.status(404).json({
+                messagem: "Usuário não encontrado."
+            });
+            return;
+        }
+        data.password = await bcrypt.hash(data.password, 10);
+        userRepository.merge(user, data);
+        const updatedUser = await userRepository.save(user);
+        res.status(200).json({
+            messagem: "Senha do usuário atualizada com sucesso!",
+            user: updatedUser
+        });
+    }
+    catch (error) {
+        if (error instanceof yup.ValidationError) {
+            res.status(400).json({
+                messagem: error.errors
+            });
+            return;
+        }
+        res.status(500).json({
+            messagem: "Erro ao atualizar senha do usuário."
         });
     }
 });
