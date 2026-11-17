@@ -14,10 +14,12 @@ import { Not } from "typeorm";
 
 import bcrypt from "bcryptjs";
 
+import { verifyToken } from "../middlewares/authMiddleware.js";
+
 
 const router = express.Router();
 
-router.get("/users", async (req: Request, res: Response) => {
+router.get("/users", verifyToken, async (req: Request, res: Response) => {
     try { 
         const userRepository = AppDataSource.getRepository(User);
 
@@ -37,7 +39,7 @@ router.get("/users", async (req: Request, res: Response) => {
 
 });
 
-router.get("/users/:id", async (req: Request, res: Response) => {
+router.get("/users/:id",verifyToken, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
@@ -62,7 +64,7 @@ router.get("/users/:id", async (req: Request, res: Response) => {
     }
 });
 
-router.post("/users", async (req: Request, res: Response) => {
+router.post("/users",verifyToken, async (req: Request, res: Response) => {
     try {
         var data = req.body;
 
@@ -127,7 +129,7 @@ router.post("/users", async (req: Request, res: Response) => {
     }
 });
 
-router.put("/users-password/:id", async (req: Request, res: Response) => {
+router.put("/users-password/:id",verifyToken, async (req: Request, res: Response) => {
 
     try {
 
@@ -182,7 +184,7 @@ router.put("/users-password/:id", async (req: Request, res: Response) => {
     }
 });
 
-router.put("/users/:id", async (req: Request, res: Response) => {
+router.put("/users/:id",verifyToken, async (req: Request, res: Response) => {
     try {
 
 
@@ -255,7 +257,7 @@ router.put("/users/:id", async (req: Request, res: Response) => {
     }
 });
 
-router.delete("/users/:id", async (req: Request, res: Response) => {
+router.delete("/users/:id",verifyToken, async (req: Request, res: Response) => {
     try {
         const {id} = req.params;
 

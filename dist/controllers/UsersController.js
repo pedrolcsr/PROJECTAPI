@@ -5,8 +5,9 @@ import { PaginationService, PaginationError } from "../services/PaginationServic
 import * as yup from 'yup';
 import { Not } from "typeorm";
 import bcrypt from "bcryptjs";
+import { verifyToken } from "../middlewares/authMiddleware.js";
 const router = express.Router();
-router.get("/users", async (req, res) => {
+router.get("/users", verifyToken, async (req, res) => {
     try {
         const userRepository = AppDataSource.getRepository(User);
         const page = Number(req.query.page) || 1;
@@ -20,7 +21,7 @@ router.get("/users", async (req, res) => {
         return;
     }
 });
-router.get("/users/:id", async (req, res) => {
+router.get("/users/:id", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const userRepository = AppDataSource.getRepository(User);
@@ -40,7 +41,7 @@ router.get("/users/:id", async (req, res) => {
         });
     }
 });
-router.post("/users", async (req, res) => {
+router.post("/users", verifyToken, async (req, res) => {
     try {
         var data = req.body;
         const schema = yup.object().shape({
@@ -84,7 +85,7 @@ router.post("/users", async (req, res) => {
         });
     }
 });
-router.put("/users-password/:id", async (req, res) => {
+router.put("/users-password/:id", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const data = req.body;
@@ -120,7 +121,7 @@ router.put("/users-password/:id", async (req, res) => {
         });
     }
 });
-router.put("/users/:id", async (req, res) => {
+router.put("/users/:id", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const data = req.body;
@@ -169,7 +170,7 @@ router.put("/users/:id", async (req, res) => {
         });
     }
 });
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/:id", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const userRepository = AppDataSource.getRepository(User);
