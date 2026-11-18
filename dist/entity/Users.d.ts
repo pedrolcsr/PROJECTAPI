@@ -4,6 +4,7 @@ export declare class User {
     name: string;
     email: string;
     password: string;
+    recoverPassword: string | null;
     situation: Situation;
     createdAt: Date;
     updatedAt: Date;

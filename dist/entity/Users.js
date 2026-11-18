@@ -15,6 +15,7 @@ let User = class User {
     name;
     email;
     password;
+    recoverPassword;
     situation;
     createdAt;
     updatedAt;
@@ -38,6 +39,15 @@ __decorate([
     Column(),
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
+__decorate([
+    Column({
+        type: "varchar",
+        length: 255,
+        nullable: true,
+        default: null
+    }),
+    __metadata("design:type", Object)
+], User.prototype, "recoverPassword", void 0);
 __decorate([
     ManyToOne(() => Situation, (situation) => situation.users),
     JoinColumn({ name: "situationId" }),

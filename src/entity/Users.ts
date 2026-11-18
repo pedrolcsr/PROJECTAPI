@@ -23,6 +23,14 @@ export class User {
     @Column()
     password!: string;
 
+    @Column({
+    type: "varchar",
+    length: 255,
+    nullable: true,
+    default: null
+})
+recoverPassword!: string | null;
+
     @ManyToOne(() => Situation, (situation) => situation.users)
     @JoinColumn({ name: "situationId" })
     situation!: Situation;
@@ -38,7 +46,7 @@ export class User {
     })
     updatedAt!: Date;
 
-    async comparePassword(password:string): Promise<boolean>{
+    async comparePassword(password: string): Promise<boolean> {
         return bcrypt.compare(password, this.password)
     }
 }
