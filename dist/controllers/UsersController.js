@@ -61,7 +61,7 @@ router.post("/users", verifyToken, async (req, res) => {
             });
             return;
         }
-        data.password = await bcrypt.hash(data.password, 10);
+        //data.password = await bcrypt.hash(data.password, 10);
         const newUser = userRepository.create({
             name: data.name.trim(),
             email: data.email.trim(),
@@ -101,7 +101,7 @@ router.put("/users-password/:id", verifyToken, async (req, res) => {
             });
             return;
         }
-        data.password = await bcrypt.hash(data.password, 10);
+        //data.password = await bcrypt.hash(data.password, 10);
         userRepository.merge(user, data);
         const updatedUser = await userRepository.save(user);
         res.status(200).json({

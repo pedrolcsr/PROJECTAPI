@@ -95,7 +95,7 @@ router.post("/users",verifyToken, async (req: Request, res: Response) => {
             return;
         }
 
-        data.password = await bcrypt.hash(data.password, 10);
+        //data.password = await bcrypt.hash(data.password, 10);
 
 
 
@@ -154,7 +154,7 @@ router.put("/users-password/:id",verifyToken, async (req: Request, res: Response
             return;
         }
 
-        data.password = await bcrypt.hash(data.password, 10);
+        //data.password = await bcrypt.hash(data.password, 10);
 
         userRepository.merge(user, data);
 

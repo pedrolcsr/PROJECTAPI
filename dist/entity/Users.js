@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from "typeorm";
 import { Situation } from "./Situations.js";
 import bcrypt from "bcryptjs";
 let User = class User {
@@ -19,6 +19,11 @@ let User = class User {
     situation;
     createdAt;
     updatedAt;
+    async hashPassword() {
+        if (this.password) {
+            this.password = await bcrypt.hash(this.password, 10);
+        }
+    }
     async comparePassword(password) {
         return bcrypt.compare(password, this.password);
     }
@@ -66,6 +71,13 @@ __decorate([
     }),
     __metadata("design:type", Date)
 ], User.prototype, "updatedAt", void 0);
+__decorate([
+    BeforeInsert(),
+    BeforeUpdate(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], User.prototype, "hashPassword", null);
 User = __decorate([
     Entity("users")
 ], User);

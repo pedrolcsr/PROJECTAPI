@@ -118,5 +118,75 @@ Nenhum e-mail enviado pela empresa ${process.env.APP} contém arquivos anexados 
         });
     }
 });
+router.post("/validate-recover-password", async (req, res) => {
+    try {
+        var data = req.body;
+        const schema = yup.object().shape({
+            recoverPassword: yup.string().required("A Chave é obrigatória!"),
+            email: yup.string().email("O campo email deve ser um email válido.").required("O campo email é obrigatório."),
+        });
+        await schema.validate(data, { abortEarly: false });
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOneBy({ email: data.email, recoverPassword: data.recoverPassword });
+        if (!user) {
+            res.status(404).json({
+                messagem: "Chave inválida!",
+            });
+            return;
+        }
+        res.status(200).json({
+            message: "Chave válida!",
+        });
+        return;
+    }
+    catch (error) {
+        if (error instanceof yup.ValidationError) {
+            res.status(400).json({
+                messagem: error.errors
+            });
+            return;
+        }
+        res.status(500).json({
+            messagem: "Chave invalida!"
+        });
+    }
+});
+router.put("/update-password", async (req, res) => {
+    try {
+        var data = req.body;
+        const schema = yup.object().shape({
+            recoverPassword: yup.string().required("A Chave é obrigatória!"),
+            email: yup.string().email("O campo email deve ser um email válido.").required("O campo email é obrigatório."),
+            password: yup.string().required("O campo password é obrigatório.").min(6, "O campo password deve ter pelo menos 6 caracteres."),
+        });
+        await schema.validate(data, { abortEarly: false });
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOneBy({ email: data.email, recoverPassword: data.recoverPassword });
+        if (!user) {
+            res.status(404).json({
+                messagem: "Chave inválida!",
+            });
+            return;
+        }
+        data.recoverPassword = null;
+        userRepository.merge(user, data);
+        await userRepository.save(user);
+        res.status(200).json({
+            message: "Senha autualizada com sucesso!",
+        });
+        return;
+    }
+    catch (error) {
+        if (error instanceof yup.ValidationError) {
+            res.status(400).json({
+                messagem: error.errors
+            });
+            return;
+        }
+        res.status(500).json({
+            messagem: "Chave invalida!"
+        });
+    }
+});
 export default router;
 //# sourceMappingURL=AuthController.js.map
