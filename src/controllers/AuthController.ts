@@ -10,6 +10,8 @@ import * as yup from 'yup';
 import crypto from "crypto";
 import { Situation } from "../entity/Situations.js";
 import nodemailer from "nodemailer";
+import { verifyToken } from "../middlewares/authMiddleware.js";
+import { name } from "nodemailer/lib/package-info.js";
 
 
 
@@ -50,6 +52,69 @@ router.post("/", async (req: Request, res: Response) => {
                 return;
 
         }
+
+});
+
+
+router.get("/validate-token", verifyToken, async (req: Request, res: Response) => {
+        res.status(200).json({
+                message: "Token Válido!",
+                userId: (req as any).user.id,
+        });
+        return;
+
+});
+
+router.post("/new-users", async (req: Request, res: Response) => {
+
+        try {
+                var data = req.body;
+
+                const schema = yup.object().shape({
+                        name: yup.string().required("O campo nome e obrigatorio!").min(3, "O campo nome deve ter no minimo 3 carcteres!"),
+                        email: yup.string().email("Email inválido!").required("O campo email e obrigatorio!"),
+                        password: yup.string().required("O campo senha e obrigatorio!").min(6, "O campo senha deve ter no minimo 6 carcteres!"),
+                        situation: yup.number().required("O campo situação e obrigatorio!"),
+                })
+
+                await schema.validate(data, { abortEarly: false });
+
+                const userRepository = AppDataSource.getRepository(User);
+
+                const exitingUser = await userRepository.findOne({
+                        where: { email: data.email }
+                })
+
+                if (exitingUser) {
+                        res.status(400).json({
+                                message: ("Já existe usuario cadastrado com esse e-mail!")
+                        })
+                        return;
+                }
+
+                userRepository.create(data);
+
+                const newUser = await userRepository.save(userRepository.create(data));
+
+                res.status(201).json({
+                        message: ("Usuario cadastrado com sucesso!"),
+                        user: newUser,
+                });
+
+        } catch (error) {
+                if (error instanceof yup.ValidationError) {
+                        res.status(400).json({
+                                message: error.errors,
+                        });
+                        return;
+                }
+
+                res.status(500).json({
+                        message: ("Erro ao cadastrar usuario!")
+                })
+        }
+
+
 
 });
 
@@ -264,7 +329,7 @@ router.put("/update-password", async (req: Request, res: Response) => {
 
                 await userRepository.save(user);
 
-                 res.status(200).json({
+                res.status(200).json({
                         message: "Senha autualizada com sucesso!",
                 });
                 return;
