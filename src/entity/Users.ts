@@ -26,14 +26,14 @@ export class User {
     password!: string;
 
     @Column({
-    type: "varchar",
-    length: 255,
-    nullable: true,
-    default: null
-})
-recoverPassword!: string | null;
+        type: "varchar",
+        length: 255,
+        nullable: true,
+        default: null
+    })
+    recoverPassword!: string | null;
 
-    @ManyToOne(() => Situation, (situation) => situation.users)
+    @ManyToOne(() => Situation)
     @JoinColumn({ name: "situationId" })
     situation!: Situation;
 
@@ -51,9 +51,9 @@ recoverPassword!: string | null;
     @BeforeInsert()
     @BeforeUpdate()
 
-    async hashPassword(): Promise<void>{
-        if(this.password){
-             this.password = await bcrypt.hash(this.password, 10)
+    async hashPassword(): Promise<void> {
+        if (this.password) {
+            this.password = await bcrypt.hash(this.password, 10)
         }
     }
 

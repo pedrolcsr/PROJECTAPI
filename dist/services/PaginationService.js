@@ -5,7 +5,7 @@ export class PaginationError extends Error {
     }
 }
 export class PaginationService {
-    static async paginate(repository, page = 1, limit = 10, order = {}) {
+    static async paginate(repository, page = 1, limit = 10, order = {}, relations) {
         if (!Number.isInteger(page) || page < 1) {
             throw new PaginationError("A página deve ser um número inteiro maior que zero.");
         }
@@ -20,7 +20,8 @@ export class PaginationService {
         const data = await repository.find({
             take: limit,
             skip: (page - 1) * limit,
-            order
+            order,
+            relations: relations ?? {}
         });
         return {
             error: false,

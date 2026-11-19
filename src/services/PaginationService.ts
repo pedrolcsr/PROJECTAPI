@@ -1,7 +1,9 @@
+
 import type {
     Repository,
     ObjectLiteral,
-    FindOptionsOrder
+    FindOptionsOrder,
+    FindOptionsRelations
 } from "typeorm";
 
 interface PaginationResults<T> {
@@ -24,8 +26,10 @@ export class PaginationService {
         repository: Repository<T>,
         page: number = 1,
         limit: number = 10,
-        order: FindOptionsOrder<T> = {}
+        order: FindOptionsOrder<T> = {},
+        relations?: FindOptionsRelations<T>
     ): Promise<PaginationResults<T>> {
+
         if (!Number.isInteger(page) || page < 1) {
             throw new PaginationError(
                 "A página deve ser um número inteiro maior que zero."
@@ -50,7 +54,8 @@ export class PaginationService {
         const data = await repository.find({
             take: limit,
             skip: (page - 1) * limit,
-            order
+            order,
+            relations: relations ?? {}
         });
 
         return {

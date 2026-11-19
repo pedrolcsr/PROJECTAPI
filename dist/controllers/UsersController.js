@@ -12,12 +12,17 @@ router.get("/users", verifyToken, async (req, res) => {
         const userRepository = AppDataSource.getRepository(User);
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
-        const result = await PaginationService.paginate(userRepository, page, limit, { id: "DESC" });
+        const result = await PaginationService.paginate(userRepository, page, limit, { id: "DESC" }, {
+            situation: true
+        });
         res.status(200).json(result);
         return;
     }
     catch (error) {
-        res.status(500).json({ messagem: "Erro ao listar usuários." });
+        console.error(error);
+        res.status(500).json({
+            message: "Erro ao listar usuários."
+        });
         return;
     }
 });
@@ -25,7 +30,14 @@ router.get("/users/:id", verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
         const userRepository = AppDataSource.getRepository(User);
-        const user = await userRepository.findOneBy({ id: Number(id) });
+        const user = await userRepository.findOne({
+            relations: {
+                situation: true
+            },
+            where: {
+                id: Number(id)
+            }
+        });
         if (!user) {
             res.status(404).json({
                 messagem: "Usuário não encontrado."
@@ -140,7 +152,8 @@ router.put("/users/:id", verifyToken, async (req, res) => {
             return;
         }
         const existingUser = await userRepository.findOne({
-            where: { email: data.email,
+            where: {
+                email: data.email,
                 id: Not(Number(id)),
             }
         });

@@ -29,6 +29,7 @@ function getValidId(id: string): number | null {
 }
 
 // LISTAR PRODUTOS COM PAGINAÇÃO
+
 router.get("/products", async (req: Request, res: Response) => {
     try {
         const page = req.query.page === undefined ? 1 : Number(req.query.page);
@@ -40,7 +41,11 @@ router.get("/products", async (req: Request, res: Response) => {
             repository,
             page,
             limit,
-            { id: "ASC" }
+            { id: "ASC" },
+            {
+                productSituation: true,
+                productCategory: true
+            }
         );
 
         const ids = result.data.map((product) => product.id);
@@ -63,35 +68,40 @@ router.get("/products", async (req: Request, res: Response) => {
 
     } catch (error) {
         if (error instanceof PaginationError) {
-            res.status(400).json({ messagem: error.message });
+            res.status(400).json({ message: error.message });
             return;
         }
 
         console.error(error);
-        res.status(500).json({ messagem: "Erro ao listar produtos." });
+        res.status(500).json({
+            message: "Erro ao listar produtos."
+        });
     }
 });
 
+
 // BUSCAR PRODUTO POR ID
+
 router.get("/products/:id", async (req: Request, res: Response) => {
     try {
-        const id = getValidId(String(req.params.id ?? ""));
+        const { id } = req.params;
 
-        if (id === null) {
-            res.status(400).json({ messagem: "ID inválido." });
-            return;
-        }
+        const productRepository = AppDataSource.getRepository(Product);
 
-        const product = await AppDataSource.getRepository(Product).findOne({
-            where: { id },
+        const product = await productRepository.findOne({
             relations: {
-                productCategory: true,
-                productSituation: true
+                productSituation: true,
+                productCategory: true
+            },
+            where: {
+                id: Number(id)
             }
         });
 
         if (!product) {
-            res.status(404).json({ messagem: "Produto não encontrado." });
+            res.status(404).json({
+                message: "Produto não encontrado."
+            });
             return;
         }
 
@@ -99,9 +109,13 @@ router.get("/products/:id", async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ messagem: "Erro ao consultar produto." });
+
+        res.status(500).json({
+            message: "Erro ao consultar produto."
+        });
     }
 });
+
 
 // CADASTRAR PRODUTO
 router.post("/products", async (req: Request, res: Response) => {

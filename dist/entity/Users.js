@@ -54,7 +54,7 @@ __decorate([
     __metadata("design:type", Object)
 ], User.prototype, "recoverPassword", void 0);
 __decorate([
-    ManyToOne(() => Situation, (situation) => situation.users),
+    ManyToOne(() => Situation),
     JoinColumn({ name: "situationId" }),
     __metadata("design:type", Situation)
 ], User.prototype, "situation", void 0);

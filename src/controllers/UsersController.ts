@@ -20,32 +20,49 @@ import { verifyToken } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 router.get("/users", verifyToken, async (req: Request, res: Response) => {
-    try { 
+    try {
         const userRepository = AppDataSource.getRepository(User);
 
         const page = Number(req.query.page) || 1;
-
         const limit = Number(req.query.limit) || 10;
 
-        const result = await PaginationService.paginate(userRepository, page, limit, { id: "DESC" });
+        const result = await PaginationService.paginate(
+            userRepository,
+            page,
+            limit,
+            { id: "DESC" },
+            {
+                situation: true
+            }
+        );
 
         res.status(200).json(result);
         return;
-    } catch (error) {
-       
-            res.status(500).json({ messagem: "Erro ao listar usuários." });
-            return;
-        }   
 
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Erro ao listar usuários."
+        });
+        return;
+    }
 });
 
-router.get("/users/:id",verifyToken, async (req: Request, res: Response) => {
+router.get("/users/:id", verifyToken, async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
         const userRepository = AppDataSource.getRepository(User);
 
-        const user = await userRepository.findOneBy({ id: Number(id) });
+        const user = await userRepository.findOne({
+            relations: {
+                situation: true
+            },
+            where: {
+                id: Number(id)
+            }
+        });
 
         if (!user) {
             res.status(404).json({
@@ -64,7 +81,7 @@ router.get("/users/:id",verifyToken, async (req: Request, res: Response) => {
     }
 });
 
-router.post("/users",verifyToken, async (req: Request, res: Response) => {
+router.post("/users", verifyToken, async (req: Request, res: Response) => {
     try {
         var data = req.body;
 
@@ -75,14 +92,14 @@ router.post("/users",verifyToken, async (req: Request, res: Response) => {
             password: yup.string().required("O campo password é obrigatório.").min(6, "O campo password deve ter pelo menos 6 caracteres."),
             situation: yup.number().required("O campo situation é obrigatório.").positive("O campo situation deve ser um número positivo.").integer("O campo situation deve ser um número inteiro.")
 
-        }); 
+        });
 
-        await schema.validate( data, { abortEarly: false });
+        await schema.validate(data, { abortEarly: false });
 
 
         const userRepository = AppDataSource.getRepository(User);
 
-        const existingUser  = await userRepository.findOne({
+        const existingUser = await userRepository.findOne({
 
             where: { email: data.email }
 
@@ -103,7 +120,7 @@ router.post("/users",verifyToken, async (req: Request, res: Response) => {
         const newUser = userRepository.create({
             name: data.name.trim(),
             email: data.email.trim(),
-            situation: data.situation 
+            situation: data.situation
         });
 
         await userRepository.save(newUser);
@@ -115,9 +132,9 @@ router.post("/users",verifyToken, async (req: Request, res: Response) => {
     } catch (error) {
         console.error(error);
         if (error instanceof yup.ValidationError) {
-        
+
             res.status(400).json({
-            messagem: error.errors
+                messagem: error.errors
             });
 
         }
@@ -129,11 +146,11 @@ router.post("/users",verifyToken, async (req: Request, res: Response) => {
     }
 });
 
-router.put("/users-password/:id",verifyToken, async (req: Request, res: Response) => {
+router.put("/users-password/:id", verifyToken, async (req: Request, res: Response) => {
 
     try {
 
-        const {id} = req.params;
+        const { id } = req.params;
 
         const data = req.body;
 
@@ -142,7 +159,7 @@ router.put("/users-password/:id",verifyToken, async (req: Request, res: Response
         });
 
         await schema.validate(data, { abortEarly: false });
-        
+
         const userRepository = AppDataSource.getRepository(User);
 
         const user = await userRepository.findOneBy({ id: Number(id) });
@@ -178,28 +195,28 @@ router.put("/users-password/:id",verifyToken, async (req: Request, res: Response
         res.status(500).json({
             messagem: "Erro ao atualizar senha do usuário."
         });
-        
+
 
 
     }
 });
 
-router.put("/users/:id",verifyToken, async (req: Request, res: Response) => {
+router.put("/users/:id", verifyToken, async (req: Request, res: Response) => {
     try {
 
 
-        const {id} = req.params;
+        const { id } = req.params;
 
-        
+
         const data = req.body;
 
-         const schema = yup.object().shape({
+        const schema = yup.object().shape({
 
-           name: yup.string().required("O campo name é obrigatório.").min(3, "O campo name deve ter pelo menos 3 caracteres."),
-           email: yup.string().email("O campo email deve ser um email válido.").required("O campo email é obrigatório."),
-           situation: yup.number().required("O campo situation é obrigatório.").positive("O campo situation deve ser um número positivo.").integer("O campo situation deve ser um número inteiro.")
+            name: yup.string().required("O campo name é obrigatório.").min(3, "O campo name deve ter pelo menos 3 caracteres."),
+            email: yup.string().email("O campo email deve ser um email válido.").required("O campo email é obrigatório."),
+            situation: yup.number().required("O campo situation é obrigatório.").positive("O campo situation deve ser um número positivo.").integer("O campo situation deve ser um número inteiro.")
 
-        }); 
+        });
 
         await schema.validate(data, { abortEarly: false });
 
@@ -215,10 +232,11 @@ router.put("/users/:id",verifyToken, async (req: Request, res: Response) => {
             return;
         }
 
-         const existingUser = await userRepository.findOne({
+        const existingUser = await userRepository.findOne({
 
-            where: { email: data.email, 
-                id: Not( Number(id)), 
+            where: {
+                email: data.email,
+                id: Not(Number(id)),
             }
 
         })
@@ -240,10 +258,10 @@ router.put("/users/:id",verifyToken, async (req: Request, res: Response) => {
         });
     } catch (error) {
 
-         if (error instanceof yup.ValidationError) {
-        
+        if (error instanceof yup.ValidationError) {
+
             res.status(400).json({
-            messagem: error.errors
+                messagem: error.errors
             });
             return;
 
@@ -257,9 +275,9 @@ router.put("/users/:id",verifyToken, async (req: Request, res: Response) => {
     }
 });
 
-router.delete("/users/:id",verifyToken, async (req: Request, res: Response) => {
+router.delete("/users/:id", verifyToken, async (req: Request, res: Response) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
 
         const userRepository = AppDataSource.getRepository(User);
 
