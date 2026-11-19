@@ -1,296 +1,381 @@
 # PROJECTAPI
 
-API REST desenvolvida com **Node.js, TypeScript, Express, TypeORM e MySQL**, com foco em operações CRUD, relacionamentos entre entidades, paginação e organização em camadas.
+### API REST para gerenciamento de usuários e produtos
 
-O projeto permite gerenciar situações gerais, categorias de produtos, situações de produtos e produtos, utilizando migrations para controlar a estrutura do banco de dados.
+![Node.js](https://img.shields.io/badge/Node.js-24.x-339933?logo=node.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5.x-000000?logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?logo=mysql&logoColor=white)
+![TypeORM](https://img.shields.io/badge/TypeORM-ORM-E83524)
+![JWT](https://img.shields.io/badge/JWT-Authentication-000000?logo=jsonwebtokens)
+![bcrypt](https://img.shields.io/badge/bcrypt-Password_Security-blue)
+
+O **PROJECTAPI** é uma API REST desenvolvida com Node.js e TypeScript, utilizando Express, TypeORM e MySQL. O sistema foi desenvolvido com foco em gerenciamento de dados, autenticação, segurança e organização de código.
+
+Além das operações CRUD, a aplicação possui autenticação com JWT, criptografia de senhas com bcrypt, recuperação e redefinição de senha por e-mail, validação de credenciais e tokens, relacionamentos entre entidades e paginação de resultados.
+
+---
+
+## Sobre o projeto
+
+O objetivo do PROJECTAPI é implementar uma estrutura Backend organizada, modular e reutilizável, oferecendo funcionalidades para gerenciamento de usuários e produtos.
+
+O sistema contempla:
+
+- Gerenciamento de usuários.
+- Gerenciamento de situações de usuários.
+- Gerenciamento de produtos.
+- Gerenciamento de categorias de produtos.
+- Gerenciamento de situações de produtos.
+- Autenticação e autorização com JWT.
+- Proteção de senhas com bcrypt.
+- Recuperação e alteração de senhas.
+- Envio de e-mails com Nodemailer.
+- Validação de dados e credenciais.
+- Paginação reutilizável.
+- Versionamento do banco de dados com migrations.
+- Inserção de dados iniciais com seeds.
 
 ## Tecnologias utilizadas
 
-- **Node.js** — ambiente de execução JavaScript.
-- **TypeScript** — tipagem estática e desenvolvimento mais seguro.
-- **Express.js** — criação e gerenciamento das rotas HTTP.
-- **TypeORM** — ORM para mapeamento de entidades e acesso ao banco de dados.
-- **MySQL 8** — banco de dados relacional.
-- **dotenv** — carregamento de variáveis de ambiente.
-- **reflect-metadata** — suporte aos metadados utilizados pelo TypeORM.
-- **Postman** — testes manuais dos endpoints REST.
-- **MySQL Workbench** — gerenciamento visual do banco de dados.
-- **Git e GitHub** — controle de versão e hospedagem do código.
+| Tecnologia | Finalidade |
+|---|---|
+| [Node.js](https://nodejs.org/) | Ambiente de execução |
+| [TypeScript](https://www.typescriptlang.org/) | Tipagem estática |
+| [Express](https://expressjs.com/) | Framework para API REST |
+| [TypeORM](https://typeorm.io/) | ORM e gerenciamento de entidades |
+| [MySQL](https://www.mysql.com/) | Banco de dados relacional |
+| [bcrypt](https://www.npmjs.com/package/bcrypt) | Hash e proteção de senhas |
+| [JWT](https://jwt.io/) | Autenticação baseada em tokens |
+| [Nodemailer](https://nodemailer.com/) | Envio de e-mails |
+| [Mailtrap](https://mailtrap.io/) | Serviço SMTP para e-mails |
+| [Yup](https://github.com/jquense/yup) | Validação de dados |
+| [dotenv](https://www.npmjs.com/package/dotenv) | Variáveis de ambiente |
 
 ## Funcionalidades
 
-- CRUD de situações gerais.
-- CRUD de categorias de produtos.
-- CRUD de situações de produtos.
-- CRUD de produtos.
-- Paginação de listagens com parâmetros configuráveis.
-- Validação de IDs e campos obrigatórios.
-- Tratamento de erros e respostas HTTP.
-- Relacionamentos entre produtos, categorias e situações.
-- Migrations para criação e versionamento das tabelas.
-- Configuração da conexão com o banco por variáveis de ambiente.
+### Autenticação e segurança
 
-## Estrutura do projeto
+- Autenticação de usuários utilizando JSON Web Token (JWT).
+- Geração de tokens assinados com chave secreta.
+- Middleware para validação de tokens.
+- Proteção de rotas que exigem autenticação.
+- Criptografia de senhas utilizando bcrypt.
+- Validação de credenciais.
+- Validação dos dados enviados nas requisições.
+
+### Recuperação e troca de senha
+
+O sistema possui um fluxo de recuperação de senha por e-mail.
+
+Etapas do processo:
+
+1. O usuário solicita a recuperação informando seu e-mail.
+2. O sistema verifica a existência da conta.
+3. Uma chave de recuperação é gerada e associada ao usuário.
+4. O Nodemailer envia um e-mail com o link de recuperação.
+5. O usuário acessa o link recebido.
+6. O sistema valida o e-mail e a chave de recuperação.
+7. Após a validação, o usuário pode cadastrar uma nova senha.
+8. A nova senha é processada pelo bcrypt antes de ser armazenada.
+
+O projeto diferencia o JWT de autenticação da chave utilizada para recuperação de senha, pois cada mecanismo possui uma finalidade específica.
+
+### Gerenciamento de dados
+
+| Recurso | Funcionalidades |
+|---|---|
+| Usuários | Cadastro, consulta, atualização, exclusão e paginação |
+| Situações | Cadastro, consulta, atualização e exclusão |
+| Produtos | Cadastro, consulta, atualização, exclusão e paginação |
+| Categorias | Cadastro, consulta, atualização e exclusão |
+| Situações de produtos | Cadastro, consulta, atualização e exclusão |
+
+### Paginação
+
+O projeto possui um serviço reutilizável chamado `PaginationService`, responsável por controlar a quantidade de registros retornados em cada consulta.
+
+Parâmetros disponíveis:
+
+- `page`: página solicitada.
+- `limit`: quantidade de registros.
+- `order`: ordenação dos resultados.
+- `relations`: relacionamentos que devem ser carregados.
+
+O serviço realiza validações para impedir páginas e limites inválidos.
+
+## Arquitetura do projeto
+
+A aplicação utiliza uma arquitetura modular, separando responsabilidades em controllers, entities, middlewares, migrations, seeds e services.
 
 ```text
 PROJECTAPI/
+│
 ├── src/
 │   ├── controllers/
 │   │   ├── AuthController.ts
-│   │   ├── SituationsController.ts
 │   │   ├── ProductCategoriesController.ts
+│   │   ├── ProductsController.ts
 │   │   ├── ProductSituationsController.ts
-│   │   └── ProductsController.ts
+│   │   ├── SituationsController.ts
+│   │   ├── TestConnectionController.ts
+│   │   └── UsersController.ts
+│   │
 │   ├── entity/
-│   │   ├── Users.ts
-│   │   ├── Situations.ts
 │   │   ├── ProductCategories.ts
+│   │   ├── Products.ts
 │   │   ├── ProductSituations.ts
-│   │   └── Products.ts
+│   │   ├── Situations.ts
+│   │   └── Users.ts
+│   │
+│   ├── middlewares/
+│   │   └── authMiddleware.ts
+│   │
 │   ├── migration/
+│   │
 │   ├── seeds/
+│   │   ├── CreateProductsSeeds.ts
+│   │   ├── CreateSituationsSeeds.ts
+│   │   └── CreateUsersSeeds.ts
+│   │
 │   ├── services/
+│   │   ├── AuthService.ts
 │   │   └── PaginationService.ts
+│   │
 │   ├── data-source.ts
 │   ├── index.ts
 │   └── run-seeds.ts
+│
 ├── .env
+├── .env.exemple
 ├── .gitignore
 ├── package.json
 ├── package-lock.json
-├── tsconfig.json
-└── README.md
+├── README.md
+└── tsconfig.json
 ```
 
-> A estrutura representa a organização utilizada no projeto. Confirme os nomes dos arquivos existentes antes de publicar o README, especialmente os controllers de produtos.
+### Responsabilidades
 
-## Requisitos
+- **Controllers:** recebem requisições HTTP, executam operações e retornam respostas.
+- **Entities:** representam as tabelas e os relacionamentos do banco de dados.
+- **Middlewares:** executam verificações durante o processamento das requisições, incluindo autenticação.
+- **Migrations:** controlam a evolução da estrutura do banco de dados.
+- **Seeds:** inserem dados iniciais.
+- **Services:** concentram funcionalidades reutilizáveis, como autenticação e paginação.
 
-Antes de executar o projeto, instale:
+## Banco de dados
 
-- Node.js e npm.
-- MySQL Server 8.
-- Git.
-- Postman (opcional, para testar as requisições).
+O projeto utiliza MySQL, com o banco de dados denominado `nodeapi`.
 
-## Instalação
+### Diagrama do banco de dados
 
-### 1. Clone o repositório
+Adicione o diagrama atualizado do banco de dados ao repositório e utilize o caminho abaixo para exibi-lo:
+
+![Diagrama do banco de dados PROJECTAPI](docs/diagrama-banco.png)
+
+### Tabelas
+
+| Tabela | Descrição |
+|---|---|
+| `users` | Usuários e informações de autenticação |
+| `situations` | Situações dos usuários |
+| `products` | Produtos cadastrados |
+| `product_categories` | Categorias dos produtos |
+| `product_situations` | Situações dos produtos |
+| `migrations` | Histórico de migrations do TypeORM |
+
+### Relacionamentos
+
+- Uma situação pode estar associada a vários usuários.
+- Uma categoria pode possuir vários produtos.
+- Uma situação pode estar associada a vários produtos.
+- Cada produto possui uma categoria e uma situação.
+
+Os relacionamentos são configurados por meio do TypeORM utilizando `ManyToOne`.
+
+## Segurança
+
+A segurança foi considerada uma parte importante do desenvolvimento da aplicação.
+
+**bcrypt**
+- Geração de hash para armazenamento de senhas.
+- Comparação entre senha informada e hash armazenado.
+- Proteção contra armazenamento de senhas em texto puro.
+
+**JWT**
+- Geração de tokens de autenticação.
+- Validação de assinatura.
+- Verificação da validade dos tokens.
+- Proteção de rotas privadas por middleware.
+
+**Recuperação de senha**
+- Chave específica para recuperação.
+- Validação da chave recebida.
+- Verificação do e-mail associado à conta.
+- Atualização da senha utilizando bcrypt.
+
+**Variáveis de ambiente**
+- Credenciais do banco de dados.
+- Chave secreta do JWT.
+- Credenciais SMTP.
+- Configurações da aplicação.
+
+As credenciais não devem ser publicadas no repositório.
+
+## Instalação e execução
+
+### Pré-requisitos
+
+- [Node.js](https://nodejs.org/)
+- npm
+- [MySQL Server](https://dev.mysql.com/downloads/mysql/)
+- Git
+
+### 1. Clonar o repositório
 
 ```bash
 git clone https://github.com/pedrolcsr/PROJECTAPI.git
 ```
 
-### 2. Acesse a pasta
+### 2. Acessar a pasta
 
 ```bash
 cd PROJECTAPI
 ```
 
-### 3. Instale as dependências
+### 3. Instalar dependências
 
 ```bash
 npm install
 ```
 
-### 4. Configure o banco de dados
+### 4. Criar o banco de dados
 
-Crie o banco no MySQL:
+No MySQL, execute:
 
 ```sql
 CREATE DATABASE nodeapi;
 ```
 
-Crie um arquivo `.env` na raiz do projeto e configure as variáveis conforme sua instalação:
+### 5. Configurar variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
 
 ```env
+APP="Pedro Softwares"
+PORT=8080
+
+JWT_SECRET=sua_chave_secreta
+
+EMAIL_ADM=admin@exemplo.com
+
+DB_DIALECT=mysql
 DB_HOST=localhost
 DB_PORT=3306
-DB_USERNAME=seu_usuario
+DB_USERNAME=root
 DB_PASSWORD=sua_senha
 DB_DATABASE=nodeapi
-PORT=8080
+
+EMAIL_FROM=noreply@seudominio.com
+EMAIL_HOST=live.smtp.mailtrap.io
+EMAIL_PORT=587
+EMAIL_USER=api
+EMAIL_PASS=sua_senha_smtp
 ```
 
-**Importante:** substitua `seu_usuario` e `sua_senha` pelas credenciais do seu MySQL. Não publique suas credenciais no GitHub.
+**Importante:** substitua os valores de exemplo pelas credenciais do seu ambiente. Nunca publique o arquivo `.env` no GitHub.
 
-## Executando o projeto
-
-### Compilar o TypeScript
+### 6. Compilar o projeto
 
 ```bash
 npm run build
 ```
 
-Esse comando compila os arquivos TypeScript conforme as configurações do `tsconfig.json`, gerando os arquivos JavaScript de saída.
-
-### Executar as migrations
-
-Após configurar o banco de dados e compilar o projeto:
-
-```bash
-npx typeorm migration:show -d dist/data-source.js
-```
-
-O comando acima lista as migrations e indica quais já foram executadas.
-
-Para executar as migrations pendentes:
+### 7. Executar migrations
 
 ```bash
 npx typeorm migration:run -d dist/data-source.js
 ```
 
-As migrations são responsáveis por criar as tabelas e os relacionamentos definidos no projeto.
+### 8. Executar seeds
 
-### Iniciar a API
+```bash
+node dist/run-seeds.js
+```
+
+### 9. Iniciar a aplicação
 
 ```bash
 npm run start:watch
 ```
 
-Por padrão, a API está configurada para utilizar a porta `8080`, conforme a variável `PORT` do arquivo `.env`.
-
-Endereço local:
+Servidor local:
 
 ```text
-http://localhost:8080
+http://localhost:8080/
 ```
 
-## Endpoints da API
+## Endpoints
 
-Todos os endpoints abaixo utilizam o endereço-base `http://localhost:8080`.
-
-### Situações gerais
+Algumas rotas documentadas do projeto:
 
 | Método | Endpoint | Descrição |
 |---|---|---|
-| GET | `/situations` | Lista situações com paginação |
-| GET | `/situations/:id` | Consulta uma situação |
-| POST | `/situations` | Cadastra uma situação |
-| PUT | `/situations/:id` | Atualiza uma situação |
-| DELETE | `/situations/:id` | Exclui uma situação |
+| GET | `/users` | Listagem paginada de usuários |
+| GET | `/products` | Listagem paginada de produtos |
+| GET | `/products/:id` | Consulta individual de produto |
 
-Exemplo de cadastro:
+A rota `/users` utiliza middleware de autenticação JWT.
 
-```json
-{
-  "nameSituation": "Ativo"
-}
-```
-
-### Categorias de produtos
-
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/product-categories` | Lista categorias |
-| GET | `/product-categories/:id` | Consulta uma categoria |
-| POST | `/product-categories` | Cadastra uma categoria |
-| PUT | `/product-categories/:id` | Atualiza uma categoria |
-| DELETE | `/product-categories/:id` | Exclui uma categoria |
-
-Exemplo de cadastro:
-
-```json
-{
-  "name": "Periféricos"
-}
-```
-
-### Situações de produtos
-
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/product-situations` | Lista situações de produtos |
-| GET | `/product-situations/:id` | Consulta uma situação |
-| POST | `/product-situations` | Cadastra uma situação |
-| PUT | `/product-situations/:id` | Atualiza uma situação |
-| DELETE | `/product-situations/:id` | Exclui uma situação |
-
-Exemplo de cadastro:
-
-```json
-{
-  "name": "Disponível"
-}
-```
-
-### Produtos
-
-| Método | Endpoint | Descrição |
-|---|---|---|
-| GET | `/products` | Lista produtos com paginação |
-| GET | `/products/:id` | Consulta um produto |
-| POST | `/products` | Cadastra um produto |
-| PUT | `/products/:id` | Atualiza um produto |
-| DELETE | `/products/:id` | Exclui um produto |
-
-Exemplo de cadastro:
-
-```json
-{
-  "name": "Teclado mecânico",
-  "productCategoryId": 1,
-  "productSituationId": 1
-}
-```
-
-Os IDs de categoria e situação devem corresponder a registros existentes no banco de dados.
-
-## Paginação
-
-Os endpoints de listagem aceitam os parâmetros `page` e `limit`.
-
-Exemplo:
+### Exemplo de paginação
 
 ```http
 GET /products?page=1&limit=10
 ```
 
-- `page`: número da página, começando em 1.
-- `limit`: quantidade de registros por página, de 1 a 100.
+As demais rotas e seus métodos podem ser consultados nos respectivos controllers.
 
-A resposta inclui os dados retornados, a página atual, a última página e o total de registros.
+## Migrations e Seeds
 
-## Banco de dados e migrations
+O TypeORM é utilizado para versionamento da estrutura do banco de dados.
 
-O banco de dados utiliza as seguintes tabelas principais:
+Entre as alterações controladas pelas migrations estão:
 
-- `users` — usuários.
-- `situations` — situações gerais.
-- `product_categories` — categorias dos produtos.
-- `product_situations` — situações dos produtos.
-- `products` — produtos cadastrados.
-- `migrations` — histórico de migrations executadas pelo TypeORM.
+- Criação das tabelas principais.
+- Adição de campos de autenticação.
+- Adição do campo `slug`.
+- Adição do campo `price`.
+- Adição do campo `recoverPassword`.
 
-A tabela `products` possui chaves estrangeiras para `product_categories` e `product_situations`, mantendo a integridade referencial.
+Os seeds são utilizados para popular as tabelas com dados iniciais, incluindo situações, usuários e produtos.
 
-O projeto utiliza `synchronize: false`, deixando a evolução do esquema sob controle das migrations.
+## Tratamento de erros
 
-## Testes
+A aplicação utiliza tratamento de exceções com `try/catch` nos controllers.
 
-Os endpoints foram testados manualmente utilizando o Postman, incluindo operações de criação, listagem, consulta, atualização e exclusão.
+Entre os cenários tratados estão:
 
-Também foram realizadas verificações de compilação TypeScript e de execução das migrations.
-
-Para reproduzir os testes, configure o banco, execute as migrations e inicie a API antes de enviar as requisições.
-
-## Boas práticas adotadas
-
-- Separação entre controllers, entidades, serviços e migrations.
-- Validação de parâmetros e campos obrigatórios.
-- Uso de variáveis de ambiente para configuração.
-- Tratamento de erros com códigos de status HTTP.
-- Paginação para listagens.
-- Relacionamentos entre entidades com chaves estrangeiras.
-- Controle de versão do esquema por migrations.
-
-## Aprendizados
-
-Este projeto foi desenvolvido para praticar conceitos fundamentais de desenvolvimento backend, incluindo APIs REST, TypeScript, ORM, modelagem relacional, migrations, validação de dados, paginação e testes de endpoints.
+- Registros não encontrados.
+- Dados inválidos.
+- Tokens ausentes ou inválidos.
+- Falhas de autenticação.
+- Erros de validação.
+- Problemas de comunicação com o banco.
+- Falhas no envio de e-mails.
+- Erros relacionados à recuperação de senha.
 
 ## Autor
 
 **Pedro Lucas Ramos Pereira**
 
-- GitHub: [@pedrolcsr](https://github.com/pedrolcsr)
-- LinkedIn: [Pedro Lucas Ramos Pereira](www.linkedin.com/in/pedrolcsr)
+Estudante de Engenharia de Software, com foco em desenvolvimento Backend.
+
+- **GitHub:** [pedrolcsr](https://github.com/pedrolcsr)
+- **Repositório:** [PROJECTAPI](https://github.com/pedrolcsr/PROJECTAPI)
+
+---
+
+Desenvolvido com Node.js, TypeScript, Express, TypeORM e MySQL.
+
+**PROJECTAPI — Desenvolvimento Backend.**
